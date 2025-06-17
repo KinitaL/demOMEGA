@@ -1,0 +1,16 @@
+# output directory
+output_dir: ./output
+# directory where busco output is situated
+busco_dir: ./busco_output
+# occupancy threshold for genes extraction
+occupancy_threshold: 0.85
+# tree template file location
+tree_template: ./output_2/tree/tree.treefile
+# settings for bootstrapping
+bootstrapping:
+  # execute?
+  do: false
+  # how many bootstraps do you want?
+  sample_number: 100
+  # how many genes in a bootstrap?
+  sample_size: 10

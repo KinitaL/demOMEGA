@@ -1,0 +1,7 @@
+services:
+  demOMEGA:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - '.:/app'

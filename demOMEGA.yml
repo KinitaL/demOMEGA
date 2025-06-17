@@ -1,0 +1,19 @@
+name: demOMEGA
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - pyyaml
+  - llvm-openmp
+  - trimal
+  - iqtree
+  - mafft
+  - prank #?
+  - paml
+  - numpy
+  - matplotlib
+  - seaborn
+  - biopython
+  - pal2nal
+  - bioconda::AMAS
