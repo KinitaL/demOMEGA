@@ -246,16 +246,20 @@ def construct_tree(input_dir, output_dir):
         shell=True,
     )
 
-def label_tree(tree_dir):
+def label_tree(tree_dir, attach_labels = False):
     """
     Assign labels to the tree
     :param tree_dir: a directory where the tree is stored
     :return:
     """
-    with open(f"{tree_dir}/tree.treefile", "r") as file, open(f"{tree_dir}/labeled_tree.treefile", "w") as new_file:
-        tree = file.read()
-        modified_tree = re.sub(PATTERN_FOR_TAXA_NAMES_IN_TREE, add_suffix, tree)
-        new_file.write(modified_tree)
+    if attach_labels:
+        with open(f"{tree_dir}/tree.treefile", "r") as file, open(f"{tree_dir}/labeled_tree.treefile", "w") as new_file:
+            tree = file.read()
+            modified_tree = re.sub(PATTERN_FOR_TAXA_NAMES_IN_TREE, add_suffix, tree)
+            new_file.write(modified_tree)
+    else:
+        shutil.copyfile(f"{tree_dir}/tree.treefile", f"{tree_dir}/labeled_tree.treefile")
+
 
 def add_suffix(match):
     return f"{match.group(1)}#1"
@@ -394,7 +398,17 @@ if __name__ == '__main__':
 
     # Label species tree
     tree_dir = f"{config["output_dir"]}/tree"
-    label_tree(tree_dir)
+
+    need_labeling = False
+    with open("./codeml.ctl.template", "r") as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith("model"):
+                parts = line.split('=')
+                if len(parts) == 2:
+                    if int(parts[1].strip()) == 2:
+                        need_labeling = True
+    label_tree(tree_dir, need_labeling)
 
 
     # Here goes the following:
@@ -452,3 +466,9 @@ if __name__ == '__main__':
         )
         means = extract_dnds_distribution_data(f"{config["output_dir"]}/dnds")
         label_final_tree(tree_dir, f"{config["output_dir"]}/results", means)
+
+    # Draw a tree with dN/dS attached
+    subprocess.run(
+        f"Rscript plot.R --file={config["output_dir"]}/results",
+        shell=True,
+        capture_output=True,)
