@@ -1,8 +1,8 @@
 name: demOMEGA
 channels:
+  - defaults
   - bioconda
   - conda-forge
-  - defaults
 dependencies:
   - pyyaml
   - llvm-openmp
@@ -17,3 +17,4 @@ dependencies:
   - biopython
   - pal2nal
   - bioconda::AMAS
+  - busco=5.8

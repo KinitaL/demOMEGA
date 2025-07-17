@@ -1,6 +1,8 @@
 .idea
 .vscode
 output*
+input
+busco_downloads
 data
 busco_output
 debug
@@ -15,4 +17,5 @@ sequence.md
 test.py
 validate_count.sh
 config.yaml
+busco_*.log
 

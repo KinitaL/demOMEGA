@@ -1,7 +1,9 @@
+# directory where input is situated
+input_dir: ./input
 # output directory
 output_dir: ./output
-# directory where busco output is situated
-busco_dir: ./busco_output
+# busco db
+busco_db: eukaryota_odb12
 # occupancy threshold for genes extraction
 occupancy_threshold: 0.85
 # tree template file location

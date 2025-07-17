@@ -10,7 +10,7 @@ import glob
 from Bio.Seq import Seq
 from matplotlib import pyplot as plt
 
-DEFAULT_BUSCO_OUTPUT_DIR="./busco_output"
+DEFAULT_INPUT_DIR="./input"
 DEFAULT_OCCUPANCY_THRESHOLD=0.85
 PATTERN_FOR_TAXA_NAMES_IN_TREE = r'([A-Za-z0-9_]+)(?=:)'
 
@@ -24,6 +24,19 @@ def create_new_directory(dir_name):
     else:
         subprocess.run(f"mkdir -p {dir_name}",
                         shell = True)
+
+def exec_busco(input_dir, output_dir, busco_db):
+    """
+    Execute BUSCO to obtain complete single-copy genes
+    :param input_dir: the directory with fasta files
+    :param output_dir: the output directory
+    :param busco_db: the DB of the BUSCO we are goint to use
+    :return:
+    """
+    subprocess.run(
+        f"busco -i {input_dir} -o {output_dir}/busco_output -m genome -l {busco_db}",
+        shell=True,
+    )
 
 # TODO: simplify it
 def extract_single_copy_genes(output_dir, busco_dir, occupancy_threshold):
@@ -358,10 +371,17 @@ if __name__ == '__main__':
     else:
         sys.exit("No output directory specified (see config)")
 
+    # execute busco
+    exec_busco(
+        config["input_dir"],
+        config["output_dir"],
+        config["busco_db"],
+    )
+
     # extract genes from busco output
     extract_single_copy_genes(
         config["output_dir"],
-        busco_dir=config["busco_dir"] if "busco_dir" in config else DEFAULT_BUSCO_OUTPUT_DIR,
+        busco_dir=f"{config["output_dir"]}/busco_output",
         occupancy_threshold=config["occupancy_threshold"] if "occupancy_threshold" in config else DEFAULT_OCCUPANCY_THRESHOLD,
     )
 
