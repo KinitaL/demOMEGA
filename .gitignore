@@ -14,8 +14,10 @@ pal2nal.pl
 rst*
 rub
 sequence.md
-test.py
 validate_count.sh
 config.yaml
 busco_*.log
+*.log
+*.out
+ds1_output
 

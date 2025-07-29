@@ -12,6 +12,7 @@ from matplotlib import pyplot as plt
 
 DEFAULT_INPUT_DIR="./input"
 DEFAULT_OCCUPANCY_THRESHOLD=0.85
+DEFAULT_SEQUENCE_TYPE="NT"
 PATTERN_FOR_TAXA_NAMES_IN_TREE = r'([A-Za-z0-9_]+)(?=:)'
 
 # Function to create a new directory, after checking for it's existence
@@ -39,12 +40,13 @@ def exec_busco(input_dir, output_dir, busco_db):
     )
 
 # TODO: simplify it
-def extract_single_copy_genes(output_dir, busco_dir, occupancy_threshold):
+def extract_single_copy_genes(output_dir, busco_dir, occupancy_threshold, sequence_type):
     """
     Aggregate BUSCO complete single-copy genes into separate fasta files
     :param output_dir: the output directory
     :param busco_dir: the busco output directory
     :param occupancy_threshold: genes with the occupancy lower than this threshold will be excluded
+    :param sequence_type: the type of sequence
     :return:
     """
     # Get the list of unique identifiers per each species
@@ -89,26 +91,46 @@ def extract_single_copy_genes(output_dir, busco_dir, occupancy_threshold):
     discarded_genes = 0
     kept_genes = 0
 
-    # Check if fasta files exist
-    if not glob.glob(f"{busco_dir}/*/run*/busco_sequences/single_copy_busco_sequences/*.fna"):
-        print()
-        print(
-            f"### Mmh, you selected the nucleotide fasta type (*.fna), but no such file has been found. ###\n"
-            f"### You may want to check your input directory ({busco_dir}/). ###\n"
-            "Quitting the analysis...")
-        print()
+    if sequence_type == "NT":
+        if not glob.glob(f"{busco_dir}/*/run*/busco_sequences/single_copy_busco_sequences/*.fna"):
+            print()
+            print(
+                f"### Mmh, you selected the {sequence_type} fasta type (*.fna), but no such file has been found. ###\n"
+                f"### You may want to check your input directory ({busco_dir}/). ###\n"
+                "Quitting the analysis...")
+            print()
 
-        quit()
-    else:
-        print(f"    The analyses will be performed on nucleotide sequences!")
-        print()
+            quit()
+        else:
+            print(f"    The analyses will be performed on nucleotide sequences!")
+            print()
+
+    elif sequence_type == "AA":
+        if not f"{busco_dir}/*/run*/busco_sequences/single_copy_busco_sequences/*.faa":
+            print()
+            print(
+                f"### Mmh, you selected the {sequence_type} fasta type (*.faa), but no such file has been found. ###\n"
+                f"### You may want to check your input directory ({busco_dir}/). ###\n"
+                "Quitting the analysis...")
+            print()
+
+            quit()
+
+        else:
+            print(f"    The analyses will be performed on amino acid sequences!")
+            print()
 
     # Generate separate fasta files with genes from species meeting inclusion threshold
     print(f"Generating fasta files for each gene with all the annotated species...")
     for gene in gene_list:
 
-        # Get the list of each genes in each species (nucleotides)
-        gene_file_list = glob.glob(f"{busco_dir}/*/run*/busco_sequences/single_copy_busco_sequences/{gene}.fna")
+        if sequence_type == "NT":
+            # Get the list of each genes in each species (nucleotides)
+            gene_file_list = glob.glob(f"{busco_dir}/*/run*/busco_sequences/single_copy_busco_sequences/{gene}.fna")
+
+        elif sequence_type == "AA":
+            # Get the list of each genes in each species (amino acids)
+            gene_file_list = glob.glob(f"{busco_dir}/*/run*/busco_sequences/single_copy_busco_sequences/{gene}.faa")
 
         # Get the occupancy thershold for each gene
         occupancy = len(gene_file_list) / len(os.listdir(busco_dir))
@@ -124,8 +146,14 @@ def extract_single_copy_genes(output_dir, busco_dir, occupancy_threshold):
 
         # For each gene in each species, change the header to include just the unique species identifier
         for id in speciesID_list:
-            input_fasta = glob.glob(f"{busco_dir}/{id}*/run*/busco_sequences/single_copy_busco_sequences/{gene}.fna")
-            output_fasta = f"{output_dir}/fasta_files/{gene}.fna"
+            if sequence_type == "NT":
+                input_fasta = glob.glob(
+                    f"{busco_dir}/{id}*/run*/busco_sequences/single_copy_busco_sequences/{gene}.fna")
+                output_fasta = f"{output_dir}/fasta_files/{gene}.fna"
+            elif sequence_type == "AA":
+                input_fasta = glob.glob(
+                    f"{busco_dir}/{id}*/run*/busco_sequences/single_copy_busco_sequences/{gene}.faa")
+                output_fasta = f"{output_dir}/fasta_files/{gene}.faa"
 
             if input_fasta:
                 # Progressively add sequences to each fasta file
@@ -378,19 +406,30 @@ if __name__ == '__main__':
         config["busco_db"],
     )
 
+
+    sequence_type = config["sequence_type"] if "sequence_type" in config else DEFAULT_SEQUENCE_TYPE
+
     # extract genes from busco output
     extract_single_copy_genes(
         config["output_dir"],
         busco_dir=f"{config["output_dir"]}/busco_output",
         occupancy_threshold=config["occupancy_threshold"] if "occupancy_threshold" in config else DEFAULT_OCCUPANCY_THRESHOLD,
+        sequence_type=sequence_type,
     )
 
     # TODO: remove paralogs
 
-    translate_nucleotides_to_protein(
-        f"{config["output_dir"]}/fasta_files",
-        f"{config["output_dir"]}/aa_seq_files",
-    )
+    if sequence_type == "NT":
+        translate_nucleotides_to_protein(
+            f"{config["output_dir"]}/fasta_files",
+            f"{config["output_dir"]}/aa_seq_files",
+        )
+    else:
+        os.makedirs(f"{config["output_dir"]}/aa_seq_files", exist_ok=True)
+        subprocess.run(
+            f"cp -R {config["output_dir"]}/fasta_files/. {config["output_dir"]}/aa_seq_files",
+            shell=True,
+            capture_output=True, )
 
     align_with_mafft(
         f"{config["output_dir"]}/aa_seq_files",
