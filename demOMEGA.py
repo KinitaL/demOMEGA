@@ -399,23 +399,43 @@ if __name__ == '__main__':
     else:
         sys.exit("No output directory specified (see config)")
 
-    # execute busco
-    exec_busco(
-        config["input_dir"],
-        config["output_dir"],
-        config["busco_db"],
-    )
-
-
+    # extract sequence type from config for simpler usage
     sequence_type = config["sequence_type"] if "sequence_type" in config else DEFAULT_SEQUENCE_TYPE
 
-    # extract genes from busco output
-    extract_single_copy_genes(
-        config["output_dir"],
-        busco_dir=f"{config["output_dir"]}/busco_output",
-        occupancy_threshold=config["occupancy_threshold"] if "occupancy_threshold" in config else DEFAULT_OCCUPANCY_THRESHOLD,
-        sequence_type=sequence_type,
-    )
+    # Prepare busco output
+    if "input_type" in config and config["input_type"] is not None:
+        print(f"Using {config['input_type']} as an input type.")
+    else:
+        sys.exit("No input type is specified (see config)")
+
+    if config["input_type"] == "B":
+        # extract genes from busco output
+        extract_single_copy_genes(
+            config["output_dir"],
+            busco_dir=config["input_dir"],
+            occupancy_threshold=config[
+                "occupancy_threshold"] if "occupancy_threshold" in config else DEFAULT_OCCUPANCY_THRESHOLD,
+            sequence_type=sequence_type,
+        )
+
+    elif config["input_type"] == "F":
+        # execute busco
+        exec_busco(
+            config["input_dir"],
+            config["output_dir"],
+            config["busco_db"],
+        )
+
+        # extract genes from busco output
+        extract_single_copy_genes(
+            config["output_dir"],
+            busco_dir=f"{config["output_dir"]}/busco_output",
+            occupancy_threshold=config[
+                "occupancy_threshold"] if "occupancy_threshold" in config else DEFAULT_OCCUPANCY_THRESHOLD,
+            sequence_type=sequence_type,
+        )
+    else:
+        sys.exit(f"Input type {config["input_type"]} not recognized (see config)")
 
     # TODO: remove paralogs
 

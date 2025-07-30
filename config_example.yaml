@@ -1,4 +1,10 @@
-# directory where input is situated
+# the type of input (busco output (B) or .fasta (F))
+input_type: B
+# directory where input is situated.
+# If you use busco output, specify the path for the directory where all
+# species' directories are situated.
+# If you use fasta output, specify the path for the directory
+# with .fasta files.
 input_dir: ./input
 # output directory
 output_dir: ./output
