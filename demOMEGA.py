@@ -226,33 +226,41 @@ def align_with_mafft(input_dir, output_dir):
             )
 
 
-def translate_to_codon_alignments(input_dir, output_dir):
+def translate_to_codon_alignments(input_dir, output_dir, sequence_type):
     """
     Translates protein alignments to codon alignments
     :param input_dir: the input directory with protein alignments
     :param output_dir: the output directory with codon alignments
     :return:
     """
+    if sequence_type == "NT":
+        file_format = ".fna"
+    else:
+        file_format = ".faa"
     os.makedirs(output_dir, exist_ok=True)
     for subdir, dirs, files in os.walk(f"{input_dir}/protein_alignments"):
         for file in files:
             subprocess.run(
-                f"pal2nal.pl {input_dir}/protein_alignments/{file} {input_dir}/fasta_files/{file.split(".")[0]}.fna -output fasta > {output_dir}/{file.split(".")[0]}.fna",
+                f"pal2nal.pl {input_dir}/protein_alignments/{file} {input_dir}/fasta_files/{file.split(".")[0]}.{file_format} -output fasta > {output_dir}/{file.split(".")[0]}.{file_format}",
                 shell=True,
             )
 
-def concat(input_dir, output_dir):
+def concat(input_dir, output_dir, sequence_type):
     """
     Concatenates genes
     :param input_dir: the input directory
     :param output_dir: the output directory
     :return:
     """
+    if sequence_type == "NT":
+        file_format = ".fna"
+    else:
+        file_format = ".faa"
     os.makedirs(output_dir, exist_ok=True)
     for subdir, dirs, files in os.walk(input_dir):
         # input = f"{input_dir}/"+f" {input_dir}/".join(files)
         subprocess.run(
-            f"AMAS.py concat -i {input_dir}/*fna -f fasta -d dna -t {output_dir}/concatenated.out -u fasta -p {output_dir}/partitions.txt --part-format nexus",
+            f"AMAS.py concat -i {input_dir}/*{file_format} -f fasta -d dna -t {output_dir}/concatenated.out -u fasta -p {output_dir}/partitions.txt --part-format nexus",
             shell=True,
         )
 
@@ -459,11 +467,13 @@ if __name__ == '__main__':
     translate_to_codon_alignments(
         f"{config["output_dir"]}",
         f"{config["output_dir"]}/codon_alignments",
+        sequence_type,
     )
 
     concat(
         f"{config["output_dir"]}/codon_alignments",
-        f"{config["output_dir"]}/concat"
+        f"{config["output_dir"]}/concat",
+        sequence_type
     )
 
     # Use a provided tree or construct a tree using concatenation
