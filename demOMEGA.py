@@ -240,6 +240,13 @@ def translate_to_codon_alignments(input_dir, output_dir, sequence_type):
     os.makedirs(output_dir, exist_ok=True)
     for subdir, dirs, files in os.walk(f"{input_dir}/protein_alignments"):
         for file in files:
+            # convert the sequence to upper case
+            with open(f"{input_dir}/fasta_files/{file.split(".")[0]}{file_format}", 'r') as fasta_file:
+                upper_text = fasta_file.read().upper()
+            with open(f"{input_dir}/fasta_files/{file.split(".")[0]}{file_format}", 'w') as out:
+                out.write(upper_text)
+
+            # execute pal2nal
             subprocess.run(
                 f"pal2nal.pl {input_dir}/protein_alignments/{file} {input_dir}/fasta_files/{file.split(".")[0]}{file_format} -output fasta > {output_dir}/{file.split(".")[0]}{file_format}",
                 shell=True,
