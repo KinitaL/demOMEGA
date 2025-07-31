@@ -242,9 +242,14 @@ def translate_to_codon_alignments(input_dir, output_dir, sequence_type):
         for file in files:
             # convert the sequence to upper case
             with open(f"{input_dir}/fasta_files/{file.split(".")[0]}{file_format}", 'r') as fasta_file:
-                upper_text = fasta_file.read().upper()
+                lines = fasta_file.readlines()
+
             with open(f"{input_dir}/fasta_files/{file.split(".")[0]}{file_format}", 'w') as out:
-                out.write(upper_text)
+                for fasta_line in lines:
+                    if fasta_line.startswith('>'):
+                        out.write(line.rstrip('\n') + '\n')
+                    else:
+                        out.write(line.upper())
 
             # execute pal2nal
             subprocess.run(
