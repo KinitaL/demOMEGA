@@ -247,9 +247,9 @@ def translate_to_codon_alignments(input_dir, output_dir, sequence_type):
             with open(f"{input_dir}/fasta_files/{file.split(".")[0]}{file_format}", 'w') as out:
                 for fasta_line in lines:
                     if fasta_line.startswith('>'):
-                        out.write(line.rstrip('\n') + '\n')
+                        out.write(fasta_line.rstrip('\n') + '\n')
                     else:
-                        out.write(line.upper())
+                        out.write(fasta_line.upper())
 
             # execute pal2nal
             subprocess.run(
