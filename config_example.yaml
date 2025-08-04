@@ -12,6 +12,8 @@ output_dir: ./output
 busco_db: eukaryota_odb12
 # amino acids (AA) or nucleotides (NT)
 sequence_type: AA
+# nucleotides' sequences' directory (required for pal2nal if sequence_type is AA)
+nt_dir: ./nt_sequences
 # occupancy threshold for genes extraction
 occupancy_threshold: 0.85
 # tree template file location

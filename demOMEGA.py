@@ -226,34 +226,38 @@ def align_with_mafft(input_dir, output_dir):
             )
 
 
-def translate_to_codon_alignments(input_dir, output_dir, sequence_type):
+def translate_to_codon_alignments(input_dir, output_dir, sequence_type, nucleotides_dir):
     """
     Translates protein alignments to codon alignments
     :param input_dir: the input directory with protein alignments
     :param output_dir: the output directory with codon alignments
+    :param sequence_type: the type of sequence
+    :param nucleotides_dir: the directory with nucleotide sequences
     :return:
     """
     if sequence_type == "NT":
         file_format = ".fna"
+        nt_dir = f"{input_dir}/fasta_files"
     else:
         file_format = ".faa"
+        nt_dir = nucleotides_dir
     os.makedirs(output_dir, exist_ok=True)
     for subdir, dirs, files in os.walk(f"{input_dir}/protein_alignments"):
         for file in files:
-            # convert the sequence to upper case
-            with open(f"{input_dir}/fasta_files/{file.split(".")[0]}{file_format}", 'r') as fasta_file:
-                lines = fasta_file.readlines()
-
-            with open(f"{input_dir}/fasta_files/{file.split(".")[0]}{file_format}", 'w') as out:
-                for fasta_line in lines:
-                    if fasta_line.startswith('>'):
-                        out.write(fasta_line.rstrip('\n') + '\n')
-                    else:
-                        out.write(fasta_line.upper())
+            # # convert the sequence to upper case
+            # with open(f"{input_dir}/fasta_files/{file.split(".")[0]}{file_format}", 'r') as fasta_file:
+            #     lines = fasta_file.readlines()
+            #
+            # with open(f"{input_dir}/fasta_files/{file.split(".")[0]}{file_format}", 'w') as out:
+            #     for fasta_line in lines:
+            #         if fasta_line.startswith('>'):
+            #             out.write(fasta_line.rstrip('\n') + '\n')
+            #         else:
+            #             out.write(fasta_line.upper())
 
             # execute pal2nal
             subprocess.run(
-                f"pal2nal.pl {input_dir}/protein_alignments/{file} {input_dir}/fasta_files/{file.split(".")[0]}{file_format} -output fasta > {output_dir}/{file.split(".")[0]}{file_format}",
+                f"pal2nal.pl {input_dir}/protein_alignments/{file} {nt_dir}/{file.split(".")[0]}{file_format} -output fasta > {output_dir}/{file.split(".")[0]}{file_format}",
                 shell=True,
             )
 
@@ -422,6 +426,24 @@ if __name__ == '__main__':
     # extract sequence type from config for simpler usage
     sequence_type = config["sequence_type"] if "sequence_type" in config else DEFAULT_SEQUENCE_TYPE
 
+    # check the presence of nucleotides sequences for pal2nal
+    if sequence_type == "AA" and not ("nt_dir" in config and config["nt_dir"] is not None):
+        sys.exit("It is required to specify the directory with nucleotide sequences.")
+    else:
+        # Execute busco for NT sequences since we have to use it for pal2nal.
+        exec_busco(
+            config["nt_dir"],
+            f"{config["output_dir"]}/nt",
+            config["busco_db"],
+        )
+        extract_single_copy_genes(
+            f"{config["output_dir"]}/nt",
+            busco_dir=f"{config["output_dir"]}/nt/busco_output",
+            occupancy_threshold=config[
+                "occupancy_threshold"] if "occupancy_threshold" in config else DEFAULT_OCCUPANCY_THRESHOLD,
+            sequence_type="NT",
+        )
+
     # Prepare busco output
     if "input_type" in config and config["input_type"] is not None:
         print(f"Using {config['input_type']} as an input type.")
@@ -480,6 +502,7 @@ if __name__ == '__main__':
         f"{config["output_dir"]}",
         f"{config["output_dir"]}/codon_alignments",
         sequence_type,
+        f"{config["output_dir"]}/nt/fasta_files",
     )
 
     concat(

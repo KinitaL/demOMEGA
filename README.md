@@ -35,6 +35,10 @@ Run synoSCO with default params (replace an example busco output with yours):
 python3 demOMEGA.py
 ```
 
+If we want to use nucleotide sequences it's enough to provide
+only sequences or busco output. However, to use protein sequences it is a mandatory
+to provide nucleotide sequences too (see config_example.yaml)
+
 
 ## Common errors
 Problem:
