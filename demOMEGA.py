@@ -427,22 +427,23 @@ if __name__ == '__main__':
     sequence_type = config["sequence_type"] if "sequence_type" in config else DEFAULT_SEQUENCE_TYPE
 
     # check the presence of nucleotides sequences for pal2nal
-    if sequence_type == "AA" and not ("nt_dir" in config and config["nt_dir"] is not None):
-        sys.exit("It is required to specify the directory with nucleotide sequences.")
-    else:
-        # Execute busco for NT sequences since we have to use it for pal2nal.
-        exec_busco(
-            config["nt_dir"],
-            f"{config["output_dir"]}/nt",
-            config["busco_db"],
-        )
-        extract_single_copy_genes(
-            f"{config["output_dir"]}/nt",
-            busco_dir=f"{config["output_dir"]}/nt/busco_output",
-            occupancy_threshold=config[
-                "occupancy_threshold"] if "occupancy_threshold" in config else DEFAULT_OCCUPANCY_THRESHOLD,
-            sequence_type="NT",
-        )
+    if sequence_type == "AA":
+        if not ("nt_dir" in config and config["nt_dir"] is not None):
+            sys.exit("It is required to specify the directory with nucleotide sequences.")
+        else:
+            # Execute busco for NT sequences since we have to use it for pal2nal.
+            exec_busco(
+                config["nt_dir"],
+                f"{config["output_dir"]}/nt",
+                config["busco_db"],
+            )
+            extract_single_copy_genes(
+                f"{config["output_dir"]}/nt",
+                busco_dir=f"{config["output_dir"]}/nt/busco_output",
+                occupancy_threshold=config[
+                    "occupancy_threshold"] if "occupancy_threshold" in config else DEFAULT_OCCUPANCY_THRESHOLD,
+                sequence_type="NT",
+            )
 
     # Prepare busco output
     if "input_type" in config and config["input_type"] is not None:
