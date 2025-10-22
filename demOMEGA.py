@@ -35,7 +35,7 @@ def exec_busco(input_dir, output_dir, busco_db):
     :return:
     """
     subprocess.run(
-        f"busco -i {input_dir} -o {output_dir}/busco_output -m genome -l {busco_db}",
+        f"busco -i {input_dir} -o {output_dir}/busco_output -m genome -l {busco_db} --metaeuk",
         shell=True,
     )
 
@@ -460,7 +460,6 @@ if __name__ == '__main__':
                 "occupancy_threshold"] if "occupancy_threshold" in config else DEFAULT_OCCUPANCY_THRESHOLD,
             sequence_type=sequence_type,
         )
-
     elif config["input_type"] == "F":
         # execute busco
         exec_busco(
