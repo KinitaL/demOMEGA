@@ -416,123 +416,123 @@ if __name__ == '__main__':
     with open('config.yaml', 'r') as file:
         config = yaml.safe_load(file)
 
-    # Create the output directory
-    if "output_dir" in config and config["output_dir"] is not None:
-        print(f"Using {config['output_dir']} as a root output directory.")
-        os.makedirs(config["output_dir"], exist_ok=True)
-    else:
-        sys.exit("No output directory specified (see config)")
-
+    # # Create the output directory
+    # if "output_dir" in config and config["output_dir"] is not None:
+    #     print(f"Using {config['output_dir']} as a root output directory.")
+    #     os.makedirs(config["output_dir"], exist_ok=True)
+    # else:
+    #     sys.exit("No output directory specified (see config)")
+    #
     # extract sequence type from config for simpler usage
     sequence_type = config["sequence_type"] if "sequence_type" in config else DEFAULT_SEQUENCE_TYPE
-
-    # check the presence of nucleotides sequences for pal2nal
-    if sequence_type == "AA":
-        if not ("nt_dir" in config and config["nt_dir"] is not None):
-            sys.exit("It is required to specify the directory with nucleotide sequences.")
-        else:
-            # Execute busco for NT sequences since we have to use it for pal2nal.
-            exec_busco(
-                config["nt_dir"],
-                f"{config["output_dir"]}/nt",
-                config["busco_db"],
-            )
-            extract_single_copy_genes(
-                f"{config["output_dir"]}/nt",
-                busco_dir=f"{config["output_dir"]}/nt/busco_output",
-                occupancy_threshold=config[
-                    "occupancy_threshold"] if "occupancy_threshold" in config else DEFAULT_OCCUPANCY_THRESHOLD,
-                sequence_type="NT",
-            )
-
-    # Prepare busco output
-    if "input_type" in config and config["input_type"] is not None:
-        print(f"Using {config['input_type']} as an input type.")
-    else:
-        sys.exit("No input type is specified (see config)")
-
-    if config["input_type"] == "B":
-        # extract genes from busco output
-        extract_single_copy_genes(
-            config["output_dir"],
-            busco_dir=config["input_dir"],
-            occupancy_threshold=config[
-                "occupancy_threshold"] if "occupancy_threshold" in config else DEFAULT_OCCUPANCY_THRESHOLD,
-            sequence_type=sequence_type,
-        )
-    elif config["input_type"] == "F":
-        # execute busco
-        exec_busco(
-            config["input_dir"],
-            config["output_dir"],
-            config["busco_db"],
-        )
-
-        # extract genes from busco output
-        extract_single_copy_genes(
-            config["output_dir"],
-            busco_dir=f"{config["output_dir"]}/busco_output",
-            occupancy_threshold=config[
-                "occupancy_threshold"] if "occupancy_threshold" in config else DEFAULT_OCCUPANCY_THRESHOLD,
-            sequence_type=sequence_type,
-        )
-    else:
-        sys.exit(f"Input type {config["input_type"]} not recognized (see config)")
-
-    # TODO: remove paralogs
-
-    if sequence_type == "NT":
-        translate_nucleotides_to_protein(
-            f"{config["output_dir"]}/fasta_files",
-            f"{config["output_dir"]}/aa_seq_files",
-        )
-    else:
-        os.makedirs(f"{config["output_dir"]}/aa_seq_files", exist_ok=True)
-        subprocess.run(
-            f"cp -R {config["output_dir"]}/fasta_files/. {config["output_dir"]}/aa_seq_files",
-            shell=True,
-            capture_output=True, )
-
-    align_with_mafft(
-        f"{config["output_dir"]}/aa_seq_files",
-        f"{config["output_dir"]}/protein_alignments",
-    )
-
-    translate_to_codon_alignments(
-        f"{config["output_dir"]}",
-        f"{config["output_dir"]}/codon_alignments",
-        sequence_type,
-        f"{config["output_dir"]}/nt/fasta_files",
-    )
-
-    concat(
-        f"{config["output_dir"]}/codon_alignments",
-        f"{config["output_dir"]}/concat",
-        sequence_type
-    )
-
-    # Use a provided tree or construct a tree using concatenation
-    if "tree_template" in config and config["tree_template"] is not None and os.path.isfile(config["tree_template"]):
-        shutil.move(config["tree_template"], f"{config["output_dir"]}/tree/tree.treefile")
-    else:
-        construct_tree(
-            f"{config["output_dir"]}/concat",
-            f"{config["output_dir"]}/tree",
-        )
-
+    #
+    # # check the presence of nucleotides sequences for pal2nal
+    # if sequence_type == "AA":
+    #     if not ("nt_dir" in config and config["nt_dir"] is not None):
+    #         sys.exit("It is required to specify the directory with nucleotide sequences.")
+    #     else:
+    #         # Execute busco for NT sequences since we have to use it for pal2nal.
+    #         exec_busco(
+    #             config["nt_dir"],
+    #             f"{config["output_dir"]}/nt",
+    #             config["busco_db"],
+    #         )
+    #         extract_single_copy_genes(
+    #             f"{config["output_dir"]}/nt",
+    #             busco_dir=f"{config["output_dir"]}/nt/busco_output",
+    #             occupancy_threshold=config[
+    #                 "occupancy_threshold"] if "occupancy_threshold" in config else DEFAULT_OCCUPANCY_THRESHOLD,
+    #             sequence_type="NT",
+    #         )
+    #
+    # # Prepare busco output
+    # if "input_type" in config and config["input_type"] is not None:
+    #     print(f"Using {config['input_type']} as an input type.")
+    # else:
+    #     sys.exit("No input type is specified (see config)")
+    #
+    # if config["input_type"] == "B":
+    #     # extract genes from busco output
+    #     extract_single_copy_genes(
+    #         config["output_dir"],
+    #         busco_dir=config["input_dir"],
+    #         occupancy_threshold=config[
+    #             "occupancy_threshold"] if "occupancy_threshold" in config else DEFAULT_OCCUPANCY_THRESHOLD,
+    #         sequence_type=sequence_type,
+    #     )
+    # elif config["input_type"] == "F":
+    #     # execute busco
+    #     exec_busco(
+    #         config["input_dir"],
+    #         config["output_dir"],
+    #         config["busco_db"],
+    #     )
+    #
+    #     # extract genes from busco output
+    #     extract_single_copy_genes(
+    #         config["output_dir"],
+    #         busco_dir=f"{config["output_dir"]}/busco_output",
+    #         occupancy_threshold=config[
+    #             "occupancy_threshold"] if "occupancy_threshold" in config else DEFAULT_OCCUPANCY_THRESHOLD,
+    #         sequence_type=sequence_type,
+    #     )
+    # else:
+    #     sys.exit(f"Input type {config["input_type"]} not recognized (see config)")
+    #
+    # # TODO: remove paralogs
+    #
+    # if sequence_type == "NT":
+    #     translate_nucleotides_to_protein(
+    #         f"{config["output_dir"]}/fasta_files",
+    #         f"{config["output_dir"]}/aa_seq_files",
+    #     )
+    # else:
+    #     os.makedirs(f"{config["output_dir"]}/aa_seq_files", exist_ok=True)
+    #     subprocess.run(
+    #         f"cp -R {config["output_dir"]}/fasta_files/. {config["output_dir"]}/aa_seq_files",
+    #         shell=True,
+    #         capture_output=True, )
+    #
+    # align_with_mafft(
+    #     f"{config["output_dir"]}/aa_seq_files",
+    #     f"{config["output_dir"]}/protein_alignments",
+    # )
+    #
+    # translate_to_codon_alignments(
+    #     f"{config["output_dir"]}",
+    #     f"{config["output_dir"]}/codon_alignments",
+    #     sequence_type,
+    #     f"{config["output_dir"]}/nt/fasta_files",
+    # )
+    #
+    # concat(
+    #     f"{config["output_dir"]}/codon_alignments",
+    #     f"{config["output_dir"]}/concat",
+    #     sequence_type
+    # )
+    #
+    # # Use a provided tree or construct a tree using concatenation
+    # if "tree_template" in config and config["tree_template"] is not None and os.path.isfile(config["tree_template"]):
+    #     shutil.move(config["tree_template"], f"{config["output_dir"]}/tree/tree.treefile")
+    # else:
+    #     construct_tree(
+    #         f"{config["output_dir"]}/concat",
+    #         f"{config["output_dir"]}/tree",
+    #     )
+    #
     # Label species tree
     tree_dir = f"{config["output_dir"]}/tree"
-
-    need_labeling = False
-    with open("./codeml.ctl.template", "r") as f:
-        for line in f:
-            line = line.strip()
-            if line.startswith("model"):
-                parts = line.split('=')
-                if len(parts) == 2:
-                    if int(parts[1].strip()) == 2:
-                        need_labeling = True
-    label_tree(tree_dir, need_labeling)
+    #
+    # need_labeling = False
+    # with open("./codeml.ctl.template", "r") as f:
+    #     for line in f:
+    #         line = line.strip()
+    #         if line.startswith("model"):
+    #             parts = line.split('=')
+    #             if len(parts) == 2:
+    #                 if int(parts[1].strip()) == 2:
+    #                     need_labeling = True
+    # label_tree(tree_dir, need_labeling)
 
 
     # Here goes the following:
