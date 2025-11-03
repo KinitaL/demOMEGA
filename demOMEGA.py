@@ -563,6 +563,7 @@ if __name__ == '__main__':
             concat(
                 f"{config["output_dir"]}/bootstrapping/{counter + 1}/codon_alignments",
                 f"{config['output_dir']}/bootstrapping/{counter + 1}/concat",
+                sequence_type,
             )
             calculate_dnds_for_species_tree(
                 f"{config["output_dir"]}/bootstrapping/{counter + 1}",
