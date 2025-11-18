@@ -10,7 +10,7 @@ dependencies:
   - iqtree
   - mafft
   - prank #?
-  - paml
+  - paml=4.10.7
   - numpy
   - matplotlib
   - seaborn
