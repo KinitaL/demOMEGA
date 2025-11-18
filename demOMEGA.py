@@ -209,25 +209,6 @@ def translate_nucleotides_to_protein(input_dir, output_dir):
                 if to_translate != "":
                     output.write(str(Seq(to_translate).translate()))
 
-def discard_rare_genes(dir, expected_species_count):
-    """
-    There are cases when genes are presented only in a few species. We need to discard such genes from the analysis.
-    :param dir: the directory with fasta files
-    :param expected_species_count: the expected number of species present in the input directory
-    :return:
-    """
-    fasta_files = glob.glob(os.path.join(dir, "*.fa"))
-
-    for filepath in fasta_files:
-        with open(filepath, "r") as f:
-            count = sum(1 for line in f if line.startswith(">"))
-
-        if count < expected_species_count:
-            print(f"Deleting {os.path.basename(filepath)} (only {count} species)")
-            os.remove(filepath)
-        else:
-            print(f"Keeping {os.path.basename(filepath)} ({count} species)")
-
 def align_with_mafft(input_dir, output_dir):
     """
     Align protein sequences using MAFFT
@@ -510,12 +491,6 @@ if __name__ == '__main__':
             f"cp -R {config["output_dir"]}/fasta_files/. {config["output_dir"]}/aa_seq_files",
             shell=True,
             capture_output=True, )
-
-    # There are cases when genes are presented only in a few species. We need to discard such genes from the analysis.
-    discard_rare_genes(
-        f"{config["output_dir"]}/aa_seq_files",
-        config["expected_species_count"]
-    )
 
     align_with_mafft(
         f"{config["output_dir"]}/aa_seq_files",
